@@ -233,7 +233,7 @@
   th { background: var(--clr-surface); }
   td { background: var(--clr-bg); }
 
-  img { max-width: 90dvw; }
+  img { max-width: 90dvw; border-radius: var(--r-sm); }
   hr { height: 4px; border: none; background:  var(--clr-surface-light); border-radius: var(--r-sm);}  
   /* Typography & code */
   blockquote { color: var(--clr-muted); }
