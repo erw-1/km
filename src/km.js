@@ -124,7 +124,7 @@ const byId  = new Map();   // quick lookup: id → page object
 let   root  = null;        // defined after Markdown fetch resolves
 
 // Fetch the bundled Markdown (compiled via build‑script or manual c&p) -----
-fetch(MD, { cache: 'force-cache' })
+fetch(MD, { cache: 'reload' })
   .then(res => res.text())
   .then(parseMarkdownBundle)
   .then(initUI);
