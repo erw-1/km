@@ -1,0 +1,522 @@
+/* -------------------------------------------------------------------------
+   1. TOKENS – single source of truth
+   ---------------------------------------------------------------------- */
+@layer tokens {
+  :root {
+    /* ===== Core colours (6 hexes) ===== */
+    --clr-bg:         #1e1e1e;                          /* page background        */
+    --clr-surface:    #2a2a2a;                          /* cards / panels         */
+    --clr-fg:         #d4d4d4;                          /* primary text           */
+    --clr-accent:     #569cd6;                          /* links, active UI       */
+    --clr-border:     #444444;                          /* 1-px lines             */
+    --clr-overlay:    rgba(0,0,0,.85);                  /* modal backdrop         */
+
+    /* ===== Derived shades (no new hex codes) ===== */
+    --clr-muted:          color-mix(in srgb, var(--clr-fg) 65%, var(--clr-bg));
+    --clr-surface-light:  color-mix(in srgb, var(--clr-surface) 90%, var(--clr-fg));
+
+    /* ===== Radii & rhythm ===== */
+    --r-sm: 4px;
+    --r-md: 8px;
+
+    --g-xs: .25rem;   /*  4 px */
+    --g-sm: .5rem;    /*  8 px */
+    --g-md: .75rem;   /* 12 px */
+    --g-lg: 1rem;     /* 16 px */
+
+    /* ===== Layout constants ===== */
+    --w-sidebar: 260px;
+    --w-util:    300px;
+    --h-header:   48px;
+    --scroll-off: 70px;   /* heading scroll-margin */
+
+    /* ===== Z-levels ===== */
+    --z-menu:  1000;
+    --z-modal: 9999;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   2. RESET – minimal & opinionated
+   ---------------------------------------------------------------------- */
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    position: fixed;
+    width: 100%;
+  }
+
+  body {
+    margin: 0;
+    display: flex;
+    height: 100dvh;
+    overflow: hidden;
+
+    font-family: system-ui, Segoe UI, Roboto, sans-serif;
+    background: var(--clr-bg);
+    color: var(--clr-fg);
+  }
+    
+  a, .caret, ui, li, #search {
+    transition: .2s;
+    text-decoration: none;
+  }
+
+  /* Remove default left padding on nested nav lists */
+  #sidebar ul,
+  #toc ul {
+    padding-left: 0;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   3. LAYOUT – sidebar • header • article • util column
+   ---------------------------------------------------------------------- */
+@layer layout {
+
+  /* ===== Sidebar ===== */
+  #sidebar {
+    width: var(--w-sidebar);
+    background: var(--clr-surface);
+    border-right: 1px solid var(--clr-surface-light);
+
+    padding: calc(var(--g-sm) + .1rem) var(--g-sm);
+    overflow-y: auto;
+  }
+   
+  #wiki-title { margin-top: 0; }
+
+  /* Search input */
+  #search {
+    width: 100%;
+    margin-bottom: var(--g-sm);
+    padding: .35rem var(--g-sm);
+
+    background: var(--clr-surface-light);
+    color: var(--clr-fg);
+
+    border: 1px solid var(--clr-border);
+    border-radius: var(--r-sm);
+  }
+
+  /* Search-box utilities (merged from old Section 8) */
+  #search-box { position: relative; }
+
+  #search-clear {
+    position: absolute;
+    top: 40%;
+    right: .6rem;
+    transform: translateY(-50%);
+
+    border: none;
+    background: none;
+    padding: 0;
+
+    font: inherit;
+    line-height: 1;
+    color: var(--clr-muted);
+    cursor: pointer;
+  }
+  #search-clear:hover,
+  #search-clear:focus { color: var(--clr-fg); }
+
+  /* Nav list */
+  #sidebar ul { list-style: none; margin: 0; }
+  #sidebar li { margin: .15rem 0; cursor: pointer; }
+
+  /* Expand / collapse caret */
+  .caret {
+    display: inline-block;
+    color: var(--clr-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: -6px;  
+  }
+  .caret::before { content: "▸";}
+  .folder.open > .caret { transform: rotate(90deg); }
+
+  /* Vertical “tree trunk” (also reused by blockquote) */
+  #sidebar ul ul,
+  blockquote {
+    position: relative;
+    padding-left: 1.1em;
+  }
+  #sidebar ul ul::before,
+  blockquote::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    bottom: 0;
+    left: 5px;
+    width: 3px;
+    background: var(--clr-border);
+    opacity: .6;
+    border-radius: var(--r-sm);
+  }
+
+  /* ===== Main column ===== */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ===== Header / breadcrumb ===== */
+  header {
+    height: var(--h-header);
+    background: var(--clr-surface);
+    display: flex;
+    align-items: center;
+    padding-inline: var(--g-lg);
+  }
+
+  header a {
+    color: var(--clr-fg);
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: var(--r-sm);
+  }
+  /* Classic breadcrumb pill */
+  header a:hover,
+  .crumb-current {
+    background: var(--clr-surface-light);
+  }
+  .separator { margin: 0 .25rem; }
+
+  /* ===== Content vs util split ===== */
+  #content-area {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* Article */
+  #content {
+    flex: 1;
+    padding: var(--g-lg) calc(var(--g-lg) * 2);
+    overflow-y: auto;
+  }
+
+  #content h1,
+  #content h2,
+  #content h3 { scroll-margin-top: var(--scroll-off); }
+
+  #content a       { color: var(--clr-accent); }
+  #content a:hover { color: var(--clr-fg);     }
+
+  /* Util column */
+  #util {
+    width: var(--w-util);
+    background: var(--clr-bg);
+
+    padding: var(--g-sm) var(--g-sm) var(--g-sm) 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--g-xs);
+  }
+
+  /* ===== Tables – original look restored ===== */
+  table {
+    width: auto;
+    background: var(--clr-surface);
+    padding: 1px;
+    border-radius: var(--r-sm);
+  }
+  th,
+  td { padding: var(--g-sm); }
+  th { background: var(--clr-surface); }
+  td { background: var(--clr-bg); }
+
+  img { max-width: 90dvw; }
+  hr { height: 4px; border: none; background:  var(--clr-surface-light); border-radius: var(--r-sm);}  
+  /* Typography & code */
+  blockquote { color: var(--clr-muted); }
+
+  pre,
+  .katex-display { max-width: 90dvw; }
+
+  code {
+    background: var(--clr-surface) !important;
+    padding: 0 var(--g-xs);
+    border-radius: var(--r-sm);
+    max-width: max-content;
+  }
+
+  .katex-display .katex-html {
+    text-align: left;
+    padding: var(--g-lg);
+    background: var(--clr-surface) !important;
+    border-radius: var(--r-sm);
+    max-width: max-content;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   4. COMPONENTS – prev/next · graph · ToC · dropdowns
+   ---------------------------------------------------------------------- */
+@layer components {
+
+  /* Prev / next pager */
+  #prev-next {
+    display: flex;
+    justify-content: space-between;
+    margin-block: calc(var(--g-lg) * 2);
+  }
+  #prev-next a {
+    background: var(--clr-surface-light);
+    color: var(--clr-fg);
+
+    padding: .6rem 1rem;
+    border-radius: var(--r-sm);
+    text-decoration: none;
+  }
+  #prev-next a:hover { background: var(--clr-accent); }
+
+  /* Mini-graph box */
+  #graph-box {
+    position: relative;
+    height: 240px;
+
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-surface-light);
+    border-radius: var(--r-md);
+  }
+  #graph-box svg { width: 100%; height: 100%; }
+
+  /* Magnifier button */
+  #expand {
+    position: absolute;
+    top: 5px;
+    right: 0px;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+
+  /* Table-of-Contents */
+  #toc {
+    flex: 1;
+    background: var(--clr-surface);
+
+    border: 1px solid var(--clr-surface-light);
+    border-radius: var(--r-md);
+    padding-left: var(--g-sm);
+    overflow: auto;
+  }
+  #toc li[data-level="2"] { padding-left: 14px; }
+  #toc li[data-level="3"] { padding-left: 28px; }
+
+  #toc a       { text-decoration: none; color: var(--clr-fg); }
+    
+  #toc ul li:first-child {
+    color: var(--clr-muted);
+    text-align: center;
+    padding-bottom: var(--g-md);
+  }
+    
+  #toc ul li:first-child a {
+    color: var(--clr-muted);
+  }
+    
+  #toc a:hover { color: var(--clr-accent) !important; }
+
+  /* Breadcrumb dropdowns */
+  #crumb .dropdown ul,
+  #crumb .childbox ul {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 100%;
+
+    margin: 0;
+    padding: var(--g-xs) 0;
+    list-style: none;
+
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--r-sm);
+    z-index: var(--z-menu);
+  }
+  /* Keep open on hover */
+  #crumb .dropdown:hover ul,
+  #crumb .dropdown ul:hover,
+  #crumb .childbox:hover ul,
+  #crumb .childbox ul:hover { display: block; }
+
+  #crumb .dropdown ul li,
+  #crumb .childbox ul li {
+    padding: 2px 12px;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  #crumb .dropdown ul li:hover,
+  #crumb .childbox ul li:hover {
+    background: var(--clr-surface-light);
+  }
+
+  .dropdown   { position: relative; }
+  .childbox   { position: relative; cursor: pointer; }
+  .childbox .toggle {
+    padding: 4px;
+    margin-left: 2px;
+  }
+  .childbox .toggle:hover { color: var(--clr-accent); }
+
+  /* Search results & misc */
+  #no_result       { opacity: .6; cursor: default; }
+  #results li:hover { color: var(--clr-accent);    }
+
+  #sidebar a       { color: var(--clr-fg); text-decoration: none; }
+  #sidebar a:hover { color: var(--clr-accent);                   }
+
+  /* Close button injected via JS (sliding panels) */
+  .panel-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+
+    border: none;
+    background: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--clr-fg);
+  }
+  .panel-close:hover { color: var(--clr-accent); }
+}
+
+/* -------------------------------------------------------------------------
+   5. OVERLAY – modal dialog
+   ---------------------------------------------------------------------- */
+@layer overlay {
+  #modal {
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: var(--clr-overlay);
+    z-index: var(--z-modal);
+
+    opacity: 0;
+    visibility: hidden;
+  }
+  #modal.open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  #modal .close {
+    position: absolute;
+    top: var(--g-lg);
+    right: var(--g-lg);
+
+    font-size: 2rem;
+    color: var(--clr-muted);
+    cursor: pointer;
+  }
+  #modal svg {
+    width: 80vw;
+    height: 80vh;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   6. MISC – scrollbars • code blocks • watermark
+   ---------------------------------------------------------------------- */
+@layer misc {
+
+  /* Custom scrollbars (WebKit only) */
+  ::-webkit-scrollbar {
+    width: 20px;
+    background: transparent !important; 
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--clr-surface-light);
+    border-radius: 999px;
+    border: 9px solid transparent; 
+    background-clip: padding-box !important;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--clr-border);
+  }
+
+  a.watermark {
+    display: block;
+    text-align: center;
+    color: var(--clr-border);
+    font-size: var(--g-md);
+  }
+  a.watermark:hover { color: var(--clr-accent); }
+}
+
+/* -------------------------------------------------------------------------
+   7. RESPONSIVE – burgers & slide-in panels (≤1000 px or portrait)
+   ---------------------------------------------------------------------- */
+@layer responsive {
+
+  /* Burgers hidden on wide viewports */
+  .burger {
+    display: none;
+    border: none;
+    background: none;
+    color: var(--clr-fg);
+    cursor: pointer;
+    padding: 4px;
+  }
+  .burger:hover { color: var(--clr-accent); }
+
+  @media (min-width: 1000px) {
+    .panel-close { display: none; }
+  }
+
+  @media (max-width: 1000px), (orientation: portrait) {
+
+    /* Show burgers */
+    .burger { display: inline-flex; align-items: center; }
+
+    /* Collapse panels by default */
+    #sidebar,
+    #util { display: none; }
+
+    /* Full-viewport when opened via JS */
+    #sidebar.open,
+    #util.open {
+      display: flex;
+      flex-direction: column;
+      width: 100dvw;
+      padding-top: var(--h-header);
+
+      position: fixed;
+      inset: 0;
+      z-index: var(--z-modal);
+
+      background: var(--clr-surface);
+    }
+
+    /* Content column stacks when util is hidden */
+    #content-area { flex-direction: column; }
+
+    /* Close button for sliding panels */
+    .panel-close {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+
+      border: none;
+      background: none;
+      font: 2rem/1 monospace;
+      color: var(--clr-fg);
+      cursor: pointer;
+      z-index: calc(var(--z-menu) + 1);
+    }
+    .panel-close:hover { color: var(--clr-accent); }
+  }
+}
