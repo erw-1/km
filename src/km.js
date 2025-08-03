@@ -366,7 +366,10 @@ function search (q) {
       const li = document.createElement('li');
       li.setAttribute('role', 'option');
       li.textContent = p.title;
-      li.onclick = () => nav(p);
+      li.onclick = () => {                // auto-collapse on mobile
+        nav(p);
+        closePanels();
+      };
       resUL.appendChild(li);
     });
 
