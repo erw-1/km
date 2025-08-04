@@ -93,7 +93,8 @@ KM.ensureMarkdown = () => {
       ADD_TAGS: ['iframe'],
       ADD_ATTR: [
         'allow', 'allowfullscreen', 'frameborder', 'scrolling',
-        'width', 'height', 'src', 'title'
+        'width', 'height', 'src', 'title', 'style', 'type',
+        'input', 'checked', 'disabled'
       ],
       ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|tel:|#).*$/i
     })
