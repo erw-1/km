@@ -94,9 +94,18 @@
 
     padding: calc(var(--g-sm) + .1rem) var(--g-sm);
     overflow-y: auto;
+    box-shadow: black -20px 0px 35px 0px;
+  }
+
+  #graph-box, #toc, iframe, details, code, .katex-html, img, table, .dropdown ul, #search, #prev-next a {
+    z-index: 2;
+    box-shadow: black -0px 0px 35px -20px;
   }
    
-  #wiki-title { margin-top: 0; }
+  #wiki-title { 
+     margin-top: 0;
+     text-align: center;
+  }
 
   /* Search input */
   #search {
@@ -180,9 +189,11 @@
     background: var(--clr-surface);
     display: flex;
     align-items: center;
-    transform: translate(-1px);
-    padding: 1px;
+    transform: translate(-2px);
     border-bottom: solid 1px var(--clr-surface-light);
+    box-shadow: black 0px -15px 35px 0px;
+    z-index: 2;
+    clip-path: inset(0 0 -100px 1px);
   }
 
   header a {
@@ -258,13 +269,19 @@
     max-width: max-content;
   }
    
-  iframe {
-    width: 70%;
-    height: 70%;
-    border: none;
-    border: solid 2px var(--clr-surface-light);
-    border-radius: var(--r-sm);
-  }
+   iframe {
+       width: 70%;
+       max-width: 100%;
+       min-width: 400px;
+       height: auto !important;
+       aspect-ratio: 1.777778;
+       resize: both;
+       border: none;
+       border: solid 2px var(--clr-border);
+       border-radius: var(--r-sm);
+       padding: var(--g-sm);
+       background: var(--clr-surface-light);
+   }
 
   .katex-display .katex-html {
     text-align: left;
@@ -515,7 +532,8 @@
   ::-webkit-scrollbar-thumb:hover {
     background: var(--clr-border);
   }
-
+   
+  .watermark { z-index: 3 }
   a.watermark {
     display: block;
     text-align: center;
