@@ -90,7 +90,7 @@ KM.ensureMarkdown = () => {
   ]).then(([marked, DOMPurify]) => ({
     parse: (src, opt) => marked.marked.parse(src, { ...opt, mangle: false }),
     sanitize: html => DOMPurify.default.sanitize(html, {
-      ADD_TAGS: ['iframe'],
+      ADD_TAGS: ['iframe', 'input', 'td', 'th'],
       ADD_ATTR: [
         'allow', 'allowfullscreen', 'frameborder', 'scrolling',
         'width', 'height', 'src', 'title', 'style', 'type',
