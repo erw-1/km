@@ -180,7 +180,9 @@
     background: var(--clr-surface);
     display: flex;
     align-items: center;
-    padding-inline: var(--g-lg);
+    transform: translate(-1px);
+    padding: 1px;
+    border-bottom: solid 1px var(--clr-surface-light);
   }
 
   header a {
