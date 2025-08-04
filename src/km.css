@@ -272,6 +272,17 @@
     max-width: max-content;
   }
 
+  details {
+    background: var(--clr-surface);
+    max-width: fit-content;
+    padding: var(--g-sm);
+    border-radius: var(--r-sm);
+   }
+   
+   details code, details .katex-html {
+       border: solid 1px var(--clr-surface-light) !important;
+   }
+
    .markdown-alert p { margin: var(--g-sm) 0; }
 
    .markdown-alert {
