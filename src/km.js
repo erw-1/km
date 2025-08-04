@@ -12,7 +12,7 @@
  * @namespace KM
  * @property {Object}  d3              Selected D3 sub‑modules re‑exported
  * @property {Function}ensureHighlight Lazy loader for highlight.js subset
- * @property {Function}ensureMarkdown  Lazy loader for marked + DOMPurify
+ * @property {Function}ensureMarkdown  Lazy loader for marked + alert & footnotes extensions
  * @property {Function}ensureKatex     Lazy loader for KaTeX auto‑render
  */
 window.KM = {};
@@ -79,29 +79,26 @@ let mdReady = null; // will hold the Promise so we don’t import twice
 
 /**
  * Ensures marked and DOMPurify are available, combined into a tiny API.
- * @returns {Promise<{parse:Function,sanitize:Function}>}
+ * @returns {Promise<{parse:Function}>}
  */
 KM.ensureMarkdown = () => {
   if (mdReady) return mdReady;
 
   mdReady = Promise.all([
-    import('https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.js'),
-    import('https://cdn.jsdelivr.net/npm/dompurify@3/+esm')
-  ]).then(([marked, DOMPurify]) => ({
-    parse: (src, opt) => marked.marked.parse(src, { ...opt, mangle: false }),
-    sanitize: html => DOMPurify.default.sanitize(html, {
-      ADD_TAGS: ['iframe', 'input', 'td', 'th'],
-      ADD_ATTR: [
-        'allow', 'allowfullscreen', 'frameborder', 'scrolling',
-        'width', 'height', 'src', 'title', 'style', 'type',
-        'input', 'checked', 'disabled'
-      ],
-      ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|tel:|#).*$/i
-    })
-  }));
+    import('https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.min.js'),
+    import('https://cdn.jsdelivr.net/npm/marked-footnote/dist/index.umd.min.js'),
+    import('https://cdn.jsdelivr.net/npm/marked-alert/dist/index.umd.min.js'), 
+  ]).then(([marked, footnote]) => {
+    const md = new marked.Marked().use(markedFootnote()).use(markedAlert());
+    return {
+      parse: (src, opt) => md.parse(src, { ...opt, mangle: false })
+    };
+  });
 
   return mdReady;
 };
+
+
 
 /**
  * Loads KaTeX auto‑render bundle if needed (detected per page).
@@ -111,7 +108,7 @@ KM.ensureKatex = (() => {
   let ready;
   return function ensureKatex () {
     if (ready) return ready;
-    ready = import('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.mjs')
+    ready = import('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.mjs')
       .then(mod => { window.renderMathInElement = mod.default; });
     return ready;
   };
@@ -498,6 +495,27 @@ function prevNext (page) {
 }
 
 /**
+ * Prefixes every in-page foot-note link (<a href="#footnote-…">, #fn-…,
+ * #fnref-…) with the current page-hash so that, e.g.
+ *   #footnote-1            →  #mechanics#tech#footnote-1
+ *   #fn-a                  →  #stresstest#fn-a
+ *
+ * Only the HREF is changed; the <li id="footnote-1"> etc. stay as-is so
+ * `route()` still scrolls to plain “footnote-1”.
+ */
+function fixFootnoteLinks (page) {
+  const base = hashOf(page);              // e.g. "mechanics#tech"
+  if (!base) return;                      // root page ⇒ nothing to do
+
+  $$('#content a[href^="#"]').forEach(a => {
+    const href = a.getAttribute('href');  // "#footnote-1"
+    if (/^#(?:fn|footnote)/.test(href) && !href.includes(base)) {
+      a.setAttribute('href', `#${base}${href}`);   // "#mechanics#tech#footnote-1"
+    }
+  });
+}
+
+/**
  * High‑level page renderer orchestrating Markdown → HTML, syntax highlight,
  * math typesetting, ToC generation and deep‑link scrolling.
  *
@@ -506,8 +524,10 @@ function prevNext (page) {
  */
 async function render (page, anchor) {
   // 1. Markdown → raw HTML ---------------------------------------------------
-  const { parse, sanitize } = await KM.ensureMarkdown();
-  $('#content').innerHTML = sanitize(parse(page.content, { headerIds: false }));
+  const { parse } = await KM.ensureMarkdown();
+  $('#content').innerHTML = parse(page.content, { headerIds: false });
+  // make foot-note anchors hash-aware
+  fixFootnoteLinks(page);
 
   // 2. Number headings so «h2 1.2.3» deep‑links remain stable -------------
   numberHeadings($('#content'));
