@@ -35,7 +35,6 @@
     --w-sidebar: 290px;
     --w-util:    290px;
     --h-header:   40px;
-    --scroll-off: 50px;   /* heading scroll-margin */
 
     /* ===== Z-levels ===== */
     --z-ground: 2;
@@ -79,9 +78,9 @@
 }
 
 
-/* ---------------------------------------------------------------------------
+/* ----------------------------------------------------------------------------------------
    3. UI: sidebar • breadcrumbs dropdown header • util column • prev/next • graph • ToC
-   ------------------------------------------------------------------------ */
+   ------------------------------------------------------------------------------------- */
 @layer layout {
 
   #graph-box, #toc {
@@ -392,10 +391,14 @@
    4. CONTENT: md and populated content
    ------------------------------------------------------------------------ */
 @layer content {
+  
+  p {
+    text-align: justify;
+  }
 
   #content h1,
   #content h2,
-  #content h3 { scroll-margin-top: var(--scroll-off); }
+  #content h3 { scroll-margin-top: calc(var(--g-lg) * 2); }
 
   #content a       { color: var(--color-accent); }
   #content a:hover { color: var(--color-text);     }
@@ -422,7 +425,7 @@
   summary:hover { color: var(--color-accent); }
 
   pre,
-  .katex-display { max-width: 90dvw; }
+  .katex-display { max-width: 100%; }
 
   code {
     background: var(--color-lowest-contrast) !important;
@@ -432,7 +435,8 @@
   }
     
   pre code {
-    background: #2b2b2a !important;  
+    background: #2b2b2a !important;
+    text-wrap-mode: wrap;  
   }
    
   iframe  {
@@ -541,6 +545,7 @@
 
     visibility: hidden;
   }
+
   #modal.open {
     opacity: 1;
     visibility: visible;
@@ -555,6 +560,7 @@
     color: var(--color-mid-contrast);
     cursor: pointer;
   }
+
   #modal svg {
     width: 80vw;
     height: 80vh;
@@ -573,12 +579,14 @@
     width: 20px;
     background: transparent !important; 
   }
+
   ::-webkit-scrollbar-thumb {
     background: var(--color-low-contrast);
     border-radius: 999px;
     border: 8px solid transparent; 
     background-clip: padding-box !important;
   }
+
   ::-webkit-scrollbar-thumb:hover {
     background: var(--color-mid-contrast);
   }
@@ -611,6 +619,7 @@
     cursor: pointer;
     padding: 4px;
   }
+
   .burger:hover { color: var(--color-accent); }
 
   @media (min-width: 1000px) {
