@@ -125,7 +125,8 @@ let   root  = null;        // defined after Markdown fetch resolves
 fetch(MD, { cache: 'reload' })
   .then(res => res.text())
   .then(parseMarkdownBundle)
-  .then(initUI);
+  .then(initUI)
+  .then(route);
 
 /**
  * Parses the special comment‑delimited Markdown bundle produced by the build
@@ -206,17 +207,20 @@ function closePanels () {
 
 function initUI () {
   // --- 6‑A  Static header tweaks -------------------------------------------
-  $('#wiki-title').textContent = TITLE;
-  document.title               = TITLE;
-  $('#favicon-el').href        = FAVICON;
+  $('#wiki-favicon').src      = FAVICON;
+  $('#wiki-favicon').width    = 16;   // or style in CSS
+  $('#wiki-favicon').height   = 16;
+
+  $('#wiki-title-text').textContent = TITLE;
+
+  // Browser-tab title + <link rel="icon">
+  document.title  = TITLE;
+  $('#favicon-el').href = FAVICON;
 
   // --- 6‑B  Sidebar tree ---------------------------------------------------
   buildTree();
 
-  // --- 6‑C  Initial route --------------------------------------------------
-  route(); // handles #hash & renders page
-
-  // --- 6‑D  Mini‑graph – lazy‑initialised when scrolled into view ----------
+  // --- 6‑C  Mini‑graph – lazy‑initialised when scrolled into view ----------
   new IntersectionObserver((entries, obs) => {
     if (entries[0].isIntersecting) {
       buildGraph();
@@ -224,11 +228,11 @@ function initUI () {
     }
   }).observe($('#mini'));
 
-  // --- 6‑E  Full‑screen graph  ----------------------------------------
+  // --- 6‑D  Full‑screen graph  ----------------------------------------
   const mini = $('#mini');
   $('#expand').onclick = () => { mini.classList.toggle('fullscreen'); };
 
-  // --- 6‑F  Search box -----------------------------------------------------
+  // --- 6‑E  Search box -----------------------------------------------------
   const searchInput = $('#search');
   const searchClear = $('#search-clear');
   let debounce = 0;
@@ -245,7 +249,32 @@ function initUI () {
     searchInput.focus();
   };
 
-  // --- 6‑G  Burger toggles (mobile / portrait UI) -------------------------------------
+  /* ── Light / dark theme toggle ───────────────────────── */
+  (() => {
+    const btn   = $('#theme-toggle');
+    const root  = document.documentElement;
+    const media = matchMedia('(prefers-color-scheme: dark)');
+  
+    // initial state: localStorage > OS setting > default light
+    let dark = localStorage.getItem('km-theme') === 'dark' ||
+               (!localStorage.getItem('km-theme') && media.matches);
+  
+    apply(dark);
+  
+    btn.onclick = () => {
+      dark = !dark;
+      apply(dark);
+      localStorage.setItem('km-theme', dark ? 'dark' : 'light');
+    };
+   
+    // helper
+    function apply(isDark) {
+      root.style.setProperty('--color-main', isDark ? 'rgb(30,30,30)' : 'white');
+      root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    }
+  })(); 
+
+  // --- 6‑F  Burger toggles (mobile / portrait UI) -------------------------------------
   const togglePanel = sel => {
     const el      = $(sel);
     const wasOpen = el.classList.contains('open');
@@ -636,6 +665,7 @@ function buildGraph () {
   function fade (id, o) {
     node .style('opacity',d=>(id==null||adj.get(id)?.has(d.id)||d.id===id)?1:o);
     label.style('opacity',d=>(id==null||adj.get(id)?.has(d.id)||d.id===id)?1:o);
+    link .style('opacity', l =>id == null || l.source.id === id || l.target.id === id ? 1 : o);
   }
 
   /* Tick */
@@ -744,9 +774,6 @@ function route () {
   document.body.scrollTop            = 0;
 
   breadcrumb(page);
-  highlightCurrent();
   render(page, anchor);
+  highlightCurrent(); 
 }
-
-// Kick‑off if user lands on '/' (no Markdown yet → wait) ------------------
-if (pages.length) route();
