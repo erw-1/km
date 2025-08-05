@@ -70,7 +70,7 @@ KM.ensureHighlight = (() => {
 /* *********************************************************************
    SECTION 2 • CONFIG EXTRACTION
 ************************************************************************ */
-const { TITLE, FAVICON, MD } = window.CONFIG;
+const { TITLE, MD } = window.CONFIG;
 
 /* *********************************************************************
    SECTION 3 • MARKDOWN / KaTeX LAZY‑LOADERS
@@ -126,7 +126,8 @@ fetch(MD, { cache: 'reload' })
   .then(res => res.text())
   .then(parseMarkdownBundle)
   .then(initUI)
-  .then(route);
+  .then(() => new Promise(resolve => setTimeout(resolve, 50)))
+  .then(highlightCurrent);
 
 /**
  * Parses the special comment‑delimited Markdown bundle produced by the build
@@ -207,19 +208,13 @@ function closePanels () {
 
 function initUI () {
   // --- 6‑A  Static header tweaks -------------------------------------------
-  $('#wiki-favicon').src      = FAVICON;
-  $('#wiki-favicon').width    = 16;   // or style in CSS
-  $('#wiki-favicon').height   = 16;
-
   $('#wiki-title-text').textContent = TITLE;
-
-  // Browser-tab title + <link rel="icon">
   document.title  = TITLE;
-  $('#favicon-el').href = FAVICON;
 
   // --- 6‑B  Sidebar tree ---------------------------------------------------
   buildTree();
-
+  route(); 
+   
   // --- 6‑C  Mini‑graph – lazy‑initialised when scrolled into view ----------
   new IntersectionObserver((entries, obs) => {
     if (entries[0].isIntersecting) {
@@ -269,7 +264,7 @@ function initUI () {
    
     // helper
     function apply(isDark) {
-      root.style.setProperty('--color-main', isDark ? 'rgb(30,30,30)' : 'white');
+      root.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
       root.setAttribute('data-theme', isDark ? 'dark' : 'light');
     }
   })(); 
@@ -611,7 +606,7 @@ let   CURRENT  = -1;
    Build once – mini only
    ────────────────────────────────────────────────────────────────── */
 function buildGraph () {
-  if (graphs.mini) return;                     // already built ✔️
+  if (graphs.mini) return;                    
 
   const { nodes, links, adj } = buildGraphData();
   const svg  = KM.d3.select('#mini');
@@ -680,7 +675,6 @@ function buildGraph () {
   /* Store handles */
   graphs.mini = { node, label, sim, view, adj, w:W, h:H };
 
-  highlightCurrent();                 // first emphasise
   observeMiniResize();                // start resize watcher
 }
 
