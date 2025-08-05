@@ -690,6 +690,7 @@ function route () {
 
   breadcrumb(page);
   render(page, anchor);
+  buildGraph(page); 
 }
 
 // Kick‑off if user lands on '/' (no Markdown yet → wait) ------------------
