@@ -690,8 +690,7 @@
   iframe {
     width: 20dvw;
     max-width: 100%;
-    min-width: 400px;
-    height: auto !important;
+    min-width: 200px;
     aspect-ratio: 1.777778;
     resize: both;
     border: none;
