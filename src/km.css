@@ -139,12 +139,16 @@
   /* ─── theme toggle ───────────────────────────────────── */
   .theme-toggle {
     display: flex;
-    background: none;
     border: 0;
     cursor: pointer;
     margin-left: auto;
-    padding-right: var(--g-md);
     transition: 0.3s ease !important;
+    padding: var(--g-md) var(--g-md);
+    background: linear-gradient(
+      to right,
+      transparent 0,
+      var(--color-lowest-contrast) var(--g-md)
+    );
   }
 
   .theme-toggle svg {
@@ -154,11 +158,11 @@
   /* simple cross-fade */
   .theme-toggle .sun {
     opacity: 1;
-    transform: scale(1) rotate(40deg) translate(3px, -6px);
+    transform: scale(1) rotate(40deg) translate(15px, -11px);
   }
   .theme-toggle .moon {
     opacity: 0.3;
-    transform: scale(0.5) rotate(180deg) translate(-1px, -6px);
+    transform: scale(0.5) rotate(180deg) translate(40px, 5px);
   }
 
   html[data-theme="dark"] .theme-toggle .sun {
@@ -176,7 +180,7 @@
   }
 
   html[data-theme="light"] .theme-toggle:has(.sun) {
-    transform: rotate(180deg);
+    transform: rotate(0deg);
   }
 
   html[data-theme="dark"] .theme-toggle:has(.moon) {
@@ -471,15 +475,18 @@
 
   /* Magnifier button */
   #expand {
-    top: 0;
-    right: 0;
+    top: var(--g-sm);
+    right: var(--g-sm);
     color: var(--color-mid-contrast);
     font-size: calc(var(--g-lg) * 1.5);
     margin-top: calc(var(--g-sm) * -1);
     font-weight: bolder;
     position: absolute;
     border: none;
-    background: none;
+    background: radial-gradient(
+      var(--color-lowest-contrast) var(--g-md),
+      transparent var(--g-lg)
+    );
     cursor: pointer;
   }
 
@@ -675,13 +682,14 @@
   }
 
   pre code {
-    background: #2b2b2a !important;
-    text-wrap-mode: wrap;
+    background: #292929 !important;
+    text-wrap-mode: nowrap;
+    overflow-x: scroll;
     padding-right: calc(var(--g-lg) * 2) !important;
   }
 
   iframe {
-    width: 20dvw;
+    width: 40dvw;
     max-width: 100%;
     min-width: 200px;
     aspect-ratio: 1.777778;
@@ -727,8 +735,10 @@
   }
 
   /* ===== Copy-code icons ================================================== */
+
   pre {
     position: relative;
+    margin-right: -100dvh;
   } /* ensure the button can be positioned */
   .code-copy {
     position: absolute;
@@ -883,6 +893,14 @@
      6. RESPONSIVE: burgers & slide-in panels (≤1000 px or portrait)
      ------------------------------------------------------------------------ */
 @layer responsive {
+  .theme-toggle {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .theme-toggle:focus:not(:focus-visible) {
+    outline: none;
+  }
+
   /* Burgers hidden on wide viewports */
   .burger {
     display: none;
@@ -891,6 +909,13 @@
     color: var(--color-text);
     cursor: pointer;
     padding: 4px;
+  }
+
+  @media (min-width: 1000px) {
+    span#crumb-dyn {
+      white-space: nowrap;
+      max-width: 0px;
+    }
   }
 
   @media (min-width: 1000px), (orientation: landscape) {
@@ -905,6 +930,9 @@
 
   .panel-close {
     display: none;
+  }
+
+  @media (max-width: 1000px), (orientation: portrait) {
   }
 
   @media (max-width: 1000px), (orientation: portrait) {
@@ -950,6 +978,26 @@
       -ms-overflow-style: none;
       touch-action: pan-x;
       overscroll-behavior-y: contain;
+      -webkit-mask-image: linear-gradient(
+        to right,
+        transparent 0,
+        #000 var(--g-lg),
+        #000 calc(100% - var(--g-lg)),
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        to right,
+        transparent 0,
+        #000 var(--g-lg),
+        #000 calc(100% - var(--g-lg)),
+        transparent 100%
+      );
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+    }
+
+    #crumb-dyn a {
+      padding: 0 var(--g-xs) var(--g-xs) var(--g-xs);
     }
 
     #crumb-dyn ul,
@@ -962,8 +1010,7 @@
     }
 
     #crumb-dyn::-webkit-scrollbar {
-      /* Chrome, Safari, Edge (Blink/WebKit)    */
-      display: none; /* completely hide the horizontal bar     */
+      display: none;
     }
 
     /* Content column stacks when util is hidden */
